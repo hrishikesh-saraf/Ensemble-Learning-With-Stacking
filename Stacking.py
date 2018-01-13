@@ -118,6 +118,15 @@ class KNN:
         self.K = None
         self.name = None
 
+    def run(training_data,testing_data):
+        predicted_labels = []
+        test_labels = []
+        for curr_row in testing_data:                                         #iterate over test data
+            neighbors = findknn(training_data, curr_row, k)    #find the nearest neighbors of current test data
+            label = count_max_label(neighbors)                                #find the label 
+            predicted_labels.append(label)                                    #add the found label to the list of predicted labels
+        test_labels = [item[-1] for item in testing_data]
+        return predicted_labels
 
     def remove_column(self,matrix, column):  # Function to remove last column from Data before Normalizing it
         return [row[:column] + row[column + 1:] for row in matrix]
@@ -234,12 +243,14 @@ for subdir, dirs, files in os.walk(directory):
 
             no_of_folds = 10
             batch = len(data) / no_of_folds
+            ob2.K = int(input('Enter number of Nearest Neighbors (k): '))
             print("\nRunning Decision Tree On "+filename)
             sum1, sump, sumr, sumf = 0.0, 0.0, 0.0, 0.0
             for iteration in range(1,no_of_folds+1):
                 count, a, b, c = 0.0, 0.0, 0.0, 0.0
                 testing_data = []
                 training_data = []
+                predicted_labels_knn = []
                 # N - FOLD CROSS VALIDATION
                 for i, j in enumerate(data):
                     if (iteration == 1):
@@ -257,6 +268,9 @@ for subdir, dirs, files in os.walk(directory):
                             training_data.append(j)
                         else:
                             testing_data.append(j)
+                print("\n\nknn Starts here")
+                predicted_labels_knn = ob2.run(training_data,testing_data) 
+                
                 ob = DecisionTree()
                 rootNode = ob.build_tree(training_data)
 
@@ -272,7 +286,7 @@ for subdir, dirs, files in os.walk(directory):
                             c += 1.0
                         else:
                             b += 1.0
-
+                
                 print("Iteration"+str(iteration)+": ")
                 print("Accuracy: "+str(count/len(testing_data)*100)+"%")
                 print("Precision: "+str((a/(a+c))*100)+ "%")
@@ -282,8 +296,11 @@ for subdir, dirs, files in os.walk(directory):
                 sump += (a/(a+c))*100
                 sumr += (a/(a+b))*100
                 sumf += 2*a/(2*a + b + c)
-
+                
+                
             end = time.time()
+            
+            
             #PRINT FINAL RESULTS
             print("Average Accuracy: "+str(sum1/no_of_folds)+"%")
             print("Average Precision: " + str(sump / no_of_folds) + "%")
